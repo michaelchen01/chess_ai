@@ -1,6 +1,6 @@
 import sys
 import chess
-import numpy
+
 
 class Evaluation:
 
@@ -12,17 +12,14 @@ class Evaluation:
         elif evaluation_fn == "shannon":
             self.evalute = self.shannon
 
-
     def naive(self, board):
-        piece_value = 0
+        board_value = 0
         for square in chess.SQUARES:
             piece = board.piece_at(square)
             if piece:
-                if piece.color:
-                    piece_value += piece.piece_type
-                else:
-                    piece_value -= piece.piece_type
-        return piece_value
+                piece_value = piece.piece_type if piece.color else -piece.piece_type
+                board_value += piece_value
+        return board_value
 
     def shannon(self, board):
         return 0
