@@ -1,5 +1,6 @@
 import argparse
 import chess
+from evaluation import Evaluation
 import subprocess as sp
 import sys
 
@@ -30,6 +31,10 @@ if __name__ == "__main__":
             print "Current Board: "
             print board
             print "\n"
+
+            evaluation = Evaluation("naive")
+            print evaluation.evaluate(board)
+
 
             # human move
             legal_moves = board.legal_moves
