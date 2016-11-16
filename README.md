@@ -1,2 +1,2 @@
-# chess_ai
-Chess AI
+# Chess AI
+Final Project for CS 182
