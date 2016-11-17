@@ -16,6 +16,8 @@ parser.add_argument("algorithm", type=int,
     help="which algorithm to use: 1 - minimax, 2 - minimax_ab")
 parser.add_argument("--human", action="store_true",
     help="optional flag to allow a player to play against the AI")
+parser.add_argument("--minimax", action="store_true",
+    help="optional flag to allow usage of minimax; random moves are default")
 args = parser.parse_args()
 
 class bcolors:
@@ -48,11 +50,15 @@ def print_moves(board, legal_moves):
     print table.table
 
 if __name__ == "__main__":
-    if (args.algorithm == 1) and (args.human):
+    if (args.algorithm == 1):
         print bcolors.OKBLUE + "Starting game with minimax opponent..." + bcolors.ENDC
         board = chess.Board()
-        random_algo = chess_algos.Random()
-        minimax_algo = chess_algos.Minimax(4, True)
+
+        algo = None
+        if args.minimax:
+            algo = chess_algos.Minimax(4, True)
+        else:
+            algo = chess_algos.Random()
 
         while not(board.is_game_over()):
             print bcolors.HEADER + "Current Board:" + bcolors.ENDC
@@ -64,25 +70,25 @@ if __name__ == "__main__":
 
             while True:
                 try:
-                    # player moves
-                    # print_moves(board, legal_moves)
-                    # next_move = raw_input("Enter your next move: ")
-                    # print "\n"
-                    # board.push_uci(next_move)
-
-                    next_move = minimax_algo.next_move(board)
-                    print "Computer 1 makes: " + next_move.uci()
-                    board.push_uci(next_move.uci())
+                    if args.human:
+                        # player moves
+                        print_moves(board, legal_moves)
+                        next_move = raw_input("Enter your next move: ")
+                        print "\n"
+                        board.push_uci(next_move)
+                    else:
+                        next_move = algo.next_move(board)
+                        print "Computer 1 makes: " + next_move.uci()
+                        board.push_uci(next_move.uci())
 
                     print bcolors.HEADER + "Current Board:" + bcolors.ENDC
                     print board
                     print "\n"
 
                     if board.is_game_over():
-                        print "Game Over: " + str(board.result())
                         break
 
-                    next_move = minimax_algo.next_move(board)
+                    next_move = algo.next_move(board)
                     print "Computer 2 makes: " + next_move.uci()
                     board.push_uci(next_move.uci())
 

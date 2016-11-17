@@ -43,7 +43,7 @@ class Minimax:
     def calculate_move_ab(self, board, player, depth, alpha, beta):
         """ Perform minimax step for Player player on Board board
             and return the optimal move"""
-        if depth == 0 or board.is_game_over():
+        if depth == 0:
             return (shannon_evalfn.evaluate(board), None)
         if player == 0:
             new_alpha = alpha
