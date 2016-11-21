@@ -3,6 +3,7 @@ import argparse
 import chess
 import chess_algos
 import subprocess as sp
+import random
 import sys
 import terminaltables
 
@@ -12,12 +13,16 @@ piece_dict = {"P": "Pawn", "N": "Knight", "B": "Bishop",
               "r": "Rook", "q": "Queen",  "k": "King"}
 
 parser = argparse.ArgumentParser()
-parser.add_argument("algorithm", type=int,
-    help="which algorithm to use: 1 - minimax, 2 - minimax_ab")
 parser.add_argument("--human", action="store_true",
     help="optional flag to allow a player to play against the AI")
 parser.add_argument("--minimax", action="store_true",
     help="optional flag to allow usage of minimax; random moves are default")
+parser.add_argument("--negamax", action="store_true",
+    help="optional flag to allow usage of negamax; random moves are default")
+parser.add_argument("--negascout", action="store_true",
+    help="optional flag to allow usage of negascout; random moves are default")
+parser.add_argument("--exploration", action="store_true",
+    help="optional flag to allow an AI to make a random move with small probability")
 args = parser.parse_args()
 
 class bcolors:
@@ -49,57 +54,64 @@ def print_moves(board, legal_moves):
     table = terminaltables.AsciiTable(table_data)
     print table.table
 
+def print_board(board):
+    print bcolors.HEADER + "Current Board:" + bcolors.ENDC
+    print board
+    print "\n"
+
 if __name__ == "__main__":
-    if (args.algorithm == 1):
-        print bcolors.OKBLUE + "Starting game with minimax opponent..." + bcolors.ENDC
-        board = chess.Board()
+    board = chess.Board()
 
-        algo = None
-        if args.minimax:
-            algo = chess_algos.Minimax(4, True)
-        else:
-            algo = chess_algos.Random()
+    algo = None
+    if args.minimax:
+        algo = chess_algos.Minimax(4, True)
+    elif args.negamax:
+        algo = chess_algos.Negamax(5)
+    elif args.negascout:
+        algo = chess_algos.Negascout(4)
+    else:
+        algo = chess_algos.Random()
 
-        while not(board.is_game_over()):
-            print bcolors.HEADER + "Current Board:" + bcolors.ENDC
-            print board
-            print "\n"
+    while not(board.is_game_over()):
+        print_board(board)
+        # human move
+        legal_moves = board.legal_moves
 
-            # human move
-            legal_moves = board.legal_moves
-
-            while True:
-                try:
-                    if args.human:
-                        # player moves
-                        print_moves(board, legal_moves)
-                        next_move = raw_input("Enter your next move: ")
-                        print "\n"
-                        board.push_uci(next_move)
+        while True:
+            try:
+                if args.human:
+                    # player moves
+                    print_moves(board, legal_moves)
+                    next_move = raw_input("Enter your next move: ")
+                    print "\n"
+                    board.push_uci(next_move)
+                else:
+                    next_move = None
+                    if args.exploration and random.random() < 0.1:
+                        next_move = chess_algos.Random().next_move(board)
                     else:
                         next_move = algo.next_move(board)
-                        print "Computer 1 makes: " + next_move.uci()
-                        board.push_uci(next_move.uci())
-
-                    print bcolors.HEADER + "Current Board:" + bcolors.ENDC
-                    print board
-                    print "\n"
-
-                    if board.is_game_over():
-                        break
-
-                    next_move = algo.next_move(board)
-                    print "Computer 2 makes: " + next_move.uci()
+                    print "Computer 1 makes: " + next_move.uci()
                     board.push_uci(next_move.uci())
 
+                print_board(board)
+
+                if board.is_game_over():
                     break
-                except NameError:
-                    print bcolors.FAIL + "Invalid input. Did you wrap your string in quotes?" + bcolors.ENDC
-                except ValueError:
-                    print bcolors.FAIL + "Invalid move. Please choose a move that is in the list of legal moves." + bcolors.ENDC
 
-        print "Game Over: " + str(board.result())
+                next_move = None
+                if args.exploration and random.random() < 0.1:
+                    next_move = chess_algos.Random().next_move(board)
+                else:
+                    next_move = algo.next_move(board)
+                print "Computer 2 makes: " + next_move.uci()
+                board.push_uci(next_move.uci())
 
+                break
+            except NameError:
+                print bcolors.FAIL + "Invalid input. Did you wrap your string in quotes?" + bcolors.ENDC
+            except ValueError:
+                print bcolors.FAIL + "Invalid move. Please choose a move that is in the list of legal moves." + bcolors.ENDC
 
-    else:
-        print "Not ready yet!"  
+    print "Game Over: " + str(board.result())
+
