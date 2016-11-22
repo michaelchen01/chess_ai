@@ -1,6 +1,8 @@
+import evaluation_factors
 import sys
 import chess
 import chess.syzygy
+
 
 # Piece number to shannon value dictionary
 piece_svalue_dict = {1: 100, 2: 320, 3: 330, 4: 500, 5: 900, 6: 0}
@@ -9,14 +11,26 @@ central_squares =   [chess.C3, chess.C4, chess.C5, chess.C6, chess.D3, chess.D4,
 
 tablebases = chess.syzygy.open_tablebases()
 
+# 0 = early game
+# 1 = middle game
+# 2 = late game
+def game_stage(board):
+    piece_count = sum([1 for square in chess.SQUARES if board.piece_at(square)])
+    if piece_count > 28:
+        return 0
+    elif piece_count > 12:
+        return 1
+    else:
+        return 2
+
 # Adds a huge bonus for checkmate moves
 def checkmate_score(board):
     # If it's checkmate, and the player wins
     if board.is_checkmate():
         if (board.turn and board.result()[0] == 1) or (not(board.turn) and board.result()[0] == 0):
-            return 1000000
+            return 20000
         else:
-            return -1000000
+            return -20000
     else:
         return 0
 
@@ -39,18 +53,53 @@ def piece_bonuses(board):
             piece_counts[piece.piece_type-1] += 1
     # Calculate the bonuses
     # Both knight bonus
-    bonuses += piece_counts[1]
+    bonuses += 100 if piece_counts[1] == 2 else 0
     # Both bishop bonus
-    bonuses += piece_counts[2]
+    bonuses += 100 if piece_counts[2] == 2 else 0
     # Both rook bonus
-    bonuses += piece_counts[3]
+    bonuses += 100 if piece_counts[3] == 2 else 0
     # Queen bonus
     bonuses += piece_counts[4]
     return bonuses
 
-
 # def other_bonuses(board):
 #     if 
+
+def postion_score(board):
+    position_score = 0
+    if board.turn:
+        for square in chess.SQUARES:
+            piece = board.piece_at(square)
+            if piece and piece.color:
+                if piece.piece_type == 1:
+                    position_score += evaluation_factors.w_pawn_pos_value[square]
+                elif piece.piece_type == 2:
+                    position_score += evaluation_factors.w_knight_pos_value[square]
+                elif piece.piece_type == 3:
+                    position_score += evaluation_factors.w_bishop_pos_value[square]
+                elif piece.piece_type == 4:
+                    position_score += evaluation_factors.w_rook_pos_value[square]
+                elif piece.piece_type == 5:
+                    position_score += evaluation_factors.w_queen_pos_value[square]
+                else:
+                    position_score += evaluation_factors.w_king_midgame_pos_value[square]
+    else:
+        for square in chess.SQUARES:
+            piece = board.piece_at(square)
+            if piece and not(piece.color):
+                if piece.piece_type == 1:
+                    position_score += evaluation_factors.b_pawn_pos_value[square]
+                elif piece.piece_type == 2:
+                    position_score += evaluation_factors.b_knight_pos_value[square]
+                elif piece.piece_type == 3:
+                    position_score += evaluation_factors.b_bishop_pos_value[square]
+                elif piece.piece_type == 4:
+                    position_score += evaluation_factors.b_rook_pos_value[square]
+                elif piece.piece_type == 5:
+                    position_score += evaluation_factors.b_queen_pos_value[square]
+                else:
+                    position_score += evaluation_factors.b_king_midgame_pos_value[square]
+    return position_score
 
 
 class Evaluation:
@@ -79,19 +128,22 @@ class Evaluation:
         board_value += checkmate_score(board)
         board_value += material_score(board)
         board_value += piece_bonuses(board)
+        board_value += postion_score(board)
+
+        # Need to add: move bonus, threat bonus, 
 
         piece_count = 0
         # First calculate the score from pieces
-        for square in chess.SQUARES:
-            piece = board.piece_at(square)
-            if piece:
-                attack_value = len(board.attacks(square)) if (piece.color == board.turn) else -len(board.attacks(square))
-                center_value = 10 if (square in central_squares) and (piece.color == board.turn) else 0
+        # for square in chess.SQUARES:
+        #     piece = board.piece_at(square)
+        #     if piece:
+        #         attack_value = len(board.attacks(square)) if (piece.color == board.turn) else -len(board.attacks(square))
+        #         center_value = 10 if (square in central_squares) and (piece.color == board.turn) else 0
 
-                board_value += 0.1*attack_value
-                board_value += center_value
+        #         board_value += 0.1*attack_value
+        #         board_value += center_value
 
-                piece_count += 1
+        #         piece_count += 1
 
         # Now calculate the move mobility, etc
         new_board = board.copy()
