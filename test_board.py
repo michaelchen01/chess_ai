@@ -12,6 +12,11 @@ piece_dict = {"P": "Pawn", "N": "Knight", "B": "Bishop",
               "p": "Pawn", "n": "Knight", "b": "Bishop",
               "r": "Rook", "q": "Queen",  "k": "King"}
 
+unicode_piece_dict = {"p": u'\u2659', "n": u'\u2658', "b": u'\u2657',
+                      "r": u'\u2656', "q": u'\u2655', "k": u'\u2654',
+                      "P": u'\u265F', "N": u'\u265E', "B": u'\u265D',
+                      "R": u'\u265C', "Q": u'\u265B', "K": u'\u265A'}
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--human", action="store_true",
     help="optional flag to allow a player to play against the AI")
@@ -54,9 +59,32 @@ def print_moves(board, legal_moves):
     table = terminaltables.AsciiTable(table_data)
     print table.table
 
+def board2string(board):
+    builder = [u'a b c d e f g h\n']
+    builder.append(u'----------------\n')
+
+    index = 8
+    for square in chess.SQUARES_180:
+        piece = board.piece_at(square)
+
+        if piece:
+            builder.append(unicode_piece_dict[piece.symbol()])
+        else:
+            builder.append(".")
+
+        if chess.BB_SQUARES[square] & chess.BB_FILE_H:
+            if square != chess.H1:
+                builder.append(" |" + str(index) + "\n")
+                index -= 1
+        else:
+            builder.append(" ")
+
+    builder.append(" |" + str(index))
+    return "".join(builder)
+
 def print_board(board):
     print bcolors.HEADER + "Current Board:" + bcolors.ENDC
-    print board
+    print board2string(board)
     print "\n"
 
 if __name__ == "__main__":

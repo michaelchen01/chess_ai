@@ -170,7 +170,7 @@ class Negamax:
         start_time = time.time()
         evaluation_best = (-sys.maxint, None)
         for iter_depth in range(1,self.depth):
-            print "Thinking " + str(iter_depth) + " move(s) ahead."
+            # print "Thinking " + str(iter_depth) + " move(s) ahead."
             if time.time() - start_time > 60:
                 break
             evaluation_temp = self.calculate_move(board, 1, iter_depth, -sys.maxint, sys.maxint, start_time)
@@ -178,7 +178,7 @@ class Negamax:
                 evaluation_best = evaluation_temp
                 self.prev_best_moves[self.depth - iter_depth] = evaluation_temp[1]
 
-        print "Move made in " + str(time.time() - start_time) + " seconds."
+        # print "Move made in " + str(time.time() - start_time) + " seconds."
         return evaluation_best[1]
 
     def calculate_move(self, board, player, depth, alpha, beta, start_time):
