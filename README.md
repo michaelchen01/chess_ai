@@ -12,7 +12,8 @@ Installation is simple, just clone the project to a directory of your choice.
 
 ## Usage
 
-```usage: test_board.py [-h] [--human] [--minimax] [--negamax] [--exploration]
+```
+usage: test_board.py [-h] [--human] [--minimax] [--negamax] [--exploration]
                      white_moves_ahead black_moves_ahead
 
 positional arguments:
@@ -27,7 +28,8 @@ optional arguments:
   --negamax          optional flag to allow usage of negamax; random moves are
                      default. cannot be combined with minimax.
   --exploration      optional flag to allow an AI to make a random move with
-                     small probability```
+                     small probability
+```
 
 ## Contributors
 
