@@ -1,6 +1,5 @@
 from random import randint
 import chess
-import csv
 import evaluation
 import numpy
 import sys
@@ -178,7 +177,7 @@ class Negamax:
                 evaluation_best = evaluation_temp
                 self.prev_best_moves[self.depth - iter_depth] = evaluation_temp[1]
 
-        # print "Move made in " + str(time.time() - start_time) + " seconds."
+        print "Turn: " + str(board.turn) + " Score: " + str(evaluation_best[0])
         return evaluation_best[1]
 
     def calculate_move(self, board, player, depth, alpha, beta, start_time):

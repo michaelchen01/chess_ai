@@ -101,6 +101,34 @@ def postion_score(board):
                     position_score += evaluation_factors.b_king_midgame_pos_value[square]
     return position_score
 
+def mobility_bonus(board):
+    return len(board.legal_moves)
+
+def aggression_bonus(board):
+    aggression_bonus = 0
+    for square in chess.SQUARES:
+        piece = board.piece_at(square)
+        if piece and (piece.color == board.turn):
+            aggression_bonus += len(board.attacks(square))
+    return aggression_bonus
+
+def double_pawn_penalty(board):
+    double_pawn_penalty = 0
+    for square in chess.SQUARES:
+        piece = board.piece_at(square)
+        if piece and (piece.color == board.turn) and (square+8 < 64):
+            piece_ahead = board.piece_at(square+8)
+            if piece_ahead and piece_ahead.piece_type == 1:
+                double_pawn_penalty += 1
+    return double_pawn_penalty
+
+def pin_penalty(board):
+    pin_penalty = 0
+    for square in chess.SQUARES:
+        if board.is_pinned(board.turn, square):
+            pin_penalty += 1
+    return pin_penalty
+
 
 class Evaluation:
 
@@ -124,11 +152,17 @@ class Evaluation:
     def shannon(self, board):
 
         board_value = 0
-        # Add Material Score
+        # Add Positive Scores
         board_value += checkmate_score(board)
         board_value += material_score(board)
         board_value += piece_bonuses(board)
         board_value += postion_score(board)
+        board_value += 0.5*mobility_bonus(board)
+        board_value += 0.5*aggression_bonus(board)
+
+        # Subtract penalties
+        board_value -= double_pawn_penalty(board)
+        board_value -= pin_penalty(board)
 
         # Need to add: move bonus, threat bonus, 
 

@@ -18,14 +18,16 @@ unicode_piece_dict = {"p": u'\u2659', "n": u'\u2658', "b": u'\u2657',
                       "R": u'\u265C', "Q": u'\u265B', "K": u'\u265A'}
 
 parser = argparse.ArgumentParser()
+parser.add_argument("white_moves_ahead", type=int,
+    help = "number of moves ahead that white thinks")
+parser.add_argument("black_moves_ahead", type=int,
+    help = "number of moves ahead that black thinks")
 parser.add_argument("--human", action="store_true",
     help="optional flag to allow a player to play against the AI")
 parser.add_argument("--minimax", action="store_true",
     help="optional flag to allow usage of minimax; random moves are default")
 parser.add_argument("--negamax", action="store_true",
     help="optional flag to allow usage of negamax; random moves are default")
-parser.add_argument("--negascout", action="store_true",
-    help="optional flag to allow usage of negascout; random moves are default")
 parser.add_argument("--exploration", action="store_true",
     help="optional flag to allow an AI to make a random move with small probability")
 args = parser.parse_args()
@@ -92,11 +94,11 @@ if __name__ == "__main__":
 
     algo = None
     if args.minimax:
-        algo = chess_algos.Minimax(4, True)
+        algo_w = chess_algos.Minimax(args.white_moves_ahead, True)
+        algo_b = chess_algos.Minimax(args.black_moves_ahead, True)
     elif args.negamax:
-        algo = chess_algos.Negamax(5)
-    elif args.negascout:
-        algo = chess_algos.Negascout(4)
+        algo_w = chess_algos.Negamax(args.white_moves_ahead)
+        algo_b = chess_algos.Negamax(args.black_moves_ahead)
     else:
         algo = chess_algos.Random()
 
@@ -118,7 +120,7 @@ if __name__ == "__main__":
                     if args.exploration and random.random() < 0.1:
                         next_move = chess_algos.Random().next_move(board)
                     else:
-                        next_move = algo.next_move(board)
+                        next_move = algo_w.next_move(board)
                     print "Computer 1 makes: " + next_move.uci()
                     board.push_uci(next_move.uci())
 
@@ -131,7 +133,7 @@ if __name__ == "__main__":
                 if args.exploration and random.random() < 0.1:
                     next_move = chess_algos.Random().next_move(board)
                 else:
-                    next_move = algo.next_move(board)
+                    next_move = algo_b.next_move(board)
                 print "Computer 2 makes: " + next_move.uci()
                 board.push_uci(next_move.uci())
 
