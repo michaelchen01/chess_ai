@@ -59,7 +59,7 @@ def piece_bonuses(board):
     # Both rook bonus
     bonuses += 100 if piece_counts[3] == 2 else 0
     # Queen bonus
-    bonuses += piece_counts[4]
+    bonuses += 100*piece_counts[4]
     return bonuses
 
 # def other_bonuses(board):
@@ -129,6 +129,21 @@ def pin_penalty(board):
             pin_penalty += 1
     return pin_penalty
 
+def open_knight_penalty(board):
+    pawn_count = 0
+    knight_count = 0
+    # Find all counts of friendly pawns and knights
+    for square in chess.SQUARES:
+        piece = board.piece_at(square)
+        if piece and (piece.color == board.turn):
+            if piece.piece_type == 1:
+                pawn_count += 1
+            if piece.piece_type == 2:
+                knight_count += 1
+    # Generate the value of the knights
+    total_k_val = knight_count*piece_svalue_dict[chess.KNIGHT]
+    # Return the pawn-scaled knight value
+    return total_k_val*(1.0 - pawn_count/8.0)
 
 class Evaluation:
 
@@ -163,32 +178,7 @@ class Evaluation:
         # Subtract penalties
         board_value -= double_pawn_penalty(board)
         board_value -= pin_penalty(board)
-
-        # Need to add: move bonus, threat bonus, 
-
-        piece_count = 0
-        # First calculate the score from pieces
-        # for square in chess.SQUARES:
-        #     piece = board.piece_at(square)
-        #     if piece:
-        #         attack_value = len(board.attacks(square)) if (piece.color == board.turn) else -len(board.attacks(square))
-        #         center_value = 10 if (square in central_squares) and (piece.color == board.turn) else 0
-
-        #         board_value += 0.1*attack_value
-        #         board_value += center_value
-
-        #         piece_count += 1
-
-        # Now calculate the move mobility, etc
-        new_board = board.copy()
-        new_board.turn = not(new_board.turn)
-
-        # board_value += 10*(len(board.legal_moves) - len(new_board.legal_moves))
-
-        if piece_count <= 6:
-            wdl = tablebases.probe_wdl(board)
-            if wdl != None:
-                board_value *= 100*wdl
+        board_value -= 0.1*open_knight_penalty(board)
 
         # Take into account attacking ability
         return board_value
