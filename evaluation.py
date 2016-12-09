@@ -112,6 +112,26 @@ def aggression_bonus(board):
             aggression_bonus += len(board.attacks(square))
     return aggression_bonus
 
+def open_rook_bishop_bonus(board):
+    pawn_count = 0
+    bishop_count = 0
+    rook_count = 0
+    # Find all counts of friendly pawns and knights
+    for square in chess.SQUARES:
+        piece = board.piece_at(square)
+        if piece and (piece.color == board.turn):
+            if piece.piece_type == 1:
+                pawn_count += 1
+            if piece.piece_type == 3:
+                bishop_count += 1
+            if piece.piece_type == 4:
+                rook_count += 1
+    # Generate the value of the knights
+    total_rb_val = bishop_count*piece_svalue_dict[chess.BISHOP]*(1.0 - pawn_count/8.0)
+    total_rb_val += rook_count*piece_svalue_dict[chess.ROOK]*(1.0 - pawn_count/8.0)
+    # Return the pawn-scaled knight value
+    return total_rb_val
+
 def double_pawn_penalty(board):
     double_pawn_penalty = 0
     for square in chess.SQUARES:
@@ -171,14 +191,15 @@ class Evaluation:
         board_value += checkmate_score(board)
         board_value += material_score(board)
         board_value += piece_bonuses(board)
-        board_value += postion_score(board)
-        board_value += 0.5*mobility_bonus(board)
-        board_value += 0.5*aggression_bonus(board)
+        board_value += 0.5*postion_score(board)
+        board_value += 0.2*mobility_bonus(board)
+        board_value += 0.2*aggression_bonus(board)
+        board_value += 0.05*open_rook_bishop_bonus(board)
 
         # Subtract penalties
         board_value -= double_pawn_penalty(board)
         board_value -= pin_penalty(board)
-        board_value -= 0.1*open_knight_penalty(board)
+        board_value -= 0.05*open_knight_penalty(board)
 
         # Take into account attacking ability
         return board_value

@@ -22,14 +22,14 @@ parser.add_argument("white_moves_ahead", type=int,
     help = "number of moves ahead that white thinks")
 parser.add_argument("black_moves_ahead", type=int,
     help = "number of moves ahead that black thinks")
-parser.add_argument("--human", action="store_true",
+parser.add_argument("--human_white", action="store_true",
+    help="optional flag to allow a player to play against the AI")
+parser.add_argument("--human_black", action="store_true",
     help="optional flag to allow a player to play against the AI")
 parser.add_argument("--minimax", action="store_true",
     help="optional flag to allow usage of minimax; random moves are default")
 parser.add_argument("--negamax", action="store_true",
     help="optional flag to allow usage of negamax; random moves are default")
-parser.add_argument("--exploration", action="store_true",
-    help="optional flag to allow an AI to make a random move with small probability")
 args = parser.parse_args()
 
 class bcolors:
@@ -97,8 +97,8 @@ if __name__ == "__main__":
         algo_w = chess_algos.Minimax(args.white_moves_ahead, True)
         algo_b = chess_algos.Minimax(args.black_moves_ahead, True)
     elif args.negamax:
-        algo_w = chess_algos.Negamax(args.white_moves_ahead)
-        algo_b = chess_algos.Negamax(args.black_moves_ahead)
+        algo_w = chess_algos.Negamax(args.white_moves_ahead, 60)
+        algo_b = chess_algos.Negamax(args.black_moves_ahead, 60)
     else:
         algo = chess_algos.Random()
 
@@ -109,18 +109,14 @@ if __name__ == "__main__":
 
         while True:
             try:
-                if args.human:
+                if args.human_white:
                     # player moves
                     print_moves(board, legal_moves)
                     next_move = raw_input("Enter your next move: ")
                     print "\n"
                     board.push_uci(next_move)
                 else:
-                    next_move = None
-                    if args.exploration and random.random() < 0.1:
-                        next_move = chess_algos.Random().next_move(board)
-                    else:
-                        next_move = algo_w.next_move(board)
+                    next_move = algo_w.next_move(board)
                     print "Computer 1 makes: " + next_move.uci()
                     board.push_uci(next_move.uci())
 
@@ -129,13 +125,16 @@ if __name__ == "__main__":
                 if board.is_game_over():
                     break
 
-                next_move = None
-                if args.exploration and random.random() < 0.1:
-                    next_move = chess_algos.Random().next_move(board)
+                if args.human_black:
+                    # player moves
+                    print_moves(board, legal_moves)
+                    next_move = raw_input("Enter your next move: ")
+                    print "\n"
+                    board.push_uci(next_move)
                 else:
                     next_move = algo_b.next_move(board)
-                print "Computer 2 makes: " + next_move.uci()
-                board.push_uci(next_move.uci())
+                    print "Computer 2 makes: " + next_move.uci()
+                    board.push_uci(next_move.uci())
 
                 break
             except NameError:

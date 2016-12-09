@@ -155,9 +155,10 @@ class Negamax:
 
     board_hash = {}
 
-    def __init__(self, depth=3):
+    def __init__(self, depth=3, timeout = 30):
         self.depth = depth
         self.prev_best_moves = [None]*self.depth
+        self.timeout = timeout
 
     def reset_caches(self):
         self.prev_best_moves = [None]*self.depth
@@ -170,7 +171,7 @@ class Negamax:
         evaluation_best = (-sys.maxint, None)
         for iter_depth in range(1,self.depth):
             # print "Thinking " + str(iter_depth) + " move(s) ahead."
-            if time.time() - start_time > 60:
+            if time.time() - start_time > self.timeout:
                 break
             evaluation_temp = self.calculate_move(board, 1, iter_depth, -sys.maxint, sys.maxint, start_time)
             if evaluation_temp[0] > evaluation_best[0]:
@@ -181,7 +182,7 @@ class Negamax:
         return evaluation_best[1]
 
     def calculate_move(self, board, player, depth, alpha, beta, start_time):
-        if depth == 0 or board.is_game_over() or ((time.time() - start_time) > 60):
+        if depth == 0 or board.is_game_over() or ((time.time() - start_time) > self.timeout):
             return (shannon_evalfn.evaluate(board), None)
         new_alpha = alpha
         new_beta = beta
@@ -210,42 +211,4 @@ class Negamax:
         if prev_best_move != None and prev_best_move in move_list:
             move_list.insert(0, move_list.pop(move_list.index(prev_best_move)))
         return move_list
-
-
-        return []
-
-class Negascout:
-
-    board_hash = {}
-
-    def __init__(self, depth=3):
-        self.depth = depth
-
-    def next_move(self, board):
-        return self.calculate_move(board, 1, self.depth, -sys.maxint, sys.maxint)
-
-    def calculate_move(self, board, player, depth, alpha, beta):
-        if depth == 0 or board.is_game_over():
-            return (player*shannon_evalfn.evaluate(board), None)
-
-        child_index = 0
-        new_alpha = -sys.maxint
-        new_beta = sys.maxint
-        evaluation_best = (-sys.maxint, None)
-        for move in board.legal_moves:
-            new_board = board.copy()
-            new_board.push_uci(move.uci())
-
-            if child_indedx > 0:
-                new_move_value = -self.calculate_move(new_board, -player, depth-1, -new_alpha-1, -new_alpha)[0]
-                if new_move_value > new_alpha and new_move_value < new_beta:
-                    new_move_value = -self.calculate_move(new_board, -player, depth-1, -new_beta, -new_move_value)[0]
-            else:
-                new_move_value = -self.calculate_move(new_board, -player, depth-1, -new_beta, -new_alpha)[0]
-            new_alpha = max(new_alpha, next_move_value)
-            if new_alpha >= new_beta:
-                break
-        return evaluation_best
-
-
 
