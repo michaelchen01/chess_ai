@@ -22,6 +22,8 @@ parser.add_argument("white_moves_ahead", type=int,
     help = "number of moves ahead that white thinks")
 parser.add_argument("black_moves_ahead", type=int,
     help = "number of moves ahead that black thinks")
+parser.add_argument("timeout_in_seconds", type=int,
+    help = "number of seconds before move searching times out")
 parser.add_argument("--human_white", action="store_true",
     help="optional flag to allow a player to play against the AI")
 parser.add_argument("--human_black", action="store_true",
@@ -97,8 +99,8 @@ if __name__ == "__main__":
         algo_w = chess_algos.Minimax(args.white_moves_ahead, True)
         algo_b = chess_algos.Minimax(args.black_moves_ahead, True)
     elif args.negamax:
-        algo_w = chess_algos.Negamax(args.white_moves_ahead, 60)
-        algo_b = chess_algos.Negamax(args.black_moves_ahead, 60)
+        algo_w = chess_algos.Negamax(args.white_moves_ahead, args.timeout_in_seconds)
+        algo_b = chess_algos.Negamax(args.black_moves_ahead, args.timeout_in_seconds)
     else:
         algo = chess_algos.Random()
 
