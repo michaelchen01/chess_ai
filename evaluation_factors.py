@@ -1,3 +1,7 @@
+# Michael Chen, 2016
+
+# HOLDS POINT VALUES FOR EACH PIECE FOR EACH COLOR
+
 b_pawn_pos_value =  [0,  0,  0,  0,  0,  0,  0,  0,
                     50, 50, 50, 50, 50, 50, 50, 50,
                     10, 10, 20, 30, 30, 20, 10, 10,

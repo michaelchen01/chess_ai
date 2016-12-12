@@ -1,3 +1,6 @@
+# Michael Chen, 2016
+
+# Libraries
 import evaluation_factors
 import sys
 import chess
@@ -9,6 +12,7 @@ piece_svalue_dict = {1: 100, 2: 320, 3: 330, 4: 500, 5: 900, 6: 0}
 central_squares =   [chess.C3, chess.C4, chess.C5, chess.C6, chess.D3, chess.D4, chess.D5, chess.D6,
                     chess.E3, chess.E4, chess.E5, chess.E6, chess.F3, chess.F4, chess.F5, chess.F6]
 
+# Open tablebase file
 tablebases = chess.syzygy.open_tablebases()
 
 # 0 = early game
@@ -34,6 +38,7 @@ def checkmate_score(board):
     else:
         return 0
 
+# Get the material value of the board
 def material_score(board):
     material_value = 0
     for square in chess.SQUARES:
@@ -43,6 +48,7 @@ def material_score(board):
             material_value += piece_value if piece.color == board.turn else -piece_value
     return material_value
 
+# Get the piece bonuses 
 def piece_bonuses(board):
     bonuses = 0
     piece_counts = [0]*6
@@ -62,9 +68,8 @@ def piece_bonuses(board):
     bonuses += 100*piece_counts[4]
     return bonuses
 
-# def other_bonuses(board):
-#     if 
-
+# Get the positional score by comparing to dictionaries
+# in  evaluation_factors
 def postion_score(board):
     position_score = 0
     if board.turn:
@@ -101,9 +106,11 @@ def postion_score(board):
                     position_score += evaluation_factors.b_king_midgame_pos_value[square]
     return position_score
 
+# Get the mobility bonus of the board
 def mobility_bonus(board):
     return len(board.legal_moves)
 
+# Get the aggression bonus of the board
 def aggression_bonus(board):
     aggression_bonus = 0
     for square in chess.SQUARES:
@@ -112,6 +119,7 @@ def aggression_bonus(board):
             aggression_bonus += len(board.attacks(square))
     return aggression_bonus
 
+# Get hte open rook bishop bonus
 def open_rook_bishop_bonus(board):
     pawn_count = 0
     bishop_count = 0
@@ -132,6 +140,7 @@ def open_rook_bishop_bonus(board):
     # Return the pawn-scaled knight value
     return total_rb_val
 
+# Penalize for double pawns
 def double_pawn_penalty(board):
     double_pawn_penalty = 0
     for square in chess.SQUARES:
@@ -142,6 +151,7 @@ def double_pawn_penalty(board):
                 double_pawn_penalty += 1
     return double_pawn_penalty
 
+# Penalize for pins
 def pin_penalty(board):
     pin_penalty = 0
     for square in chess.SQUARES:
@@ -149,6 +159,7 @@ def pin_penalty(board):
             pin_penalty += 1
     return pin_penalty
 
+# Penalize according to the open knight penalty
 def open_knight_penalty(board):
     pawn_count = 0
     knight_count = 0
@@ -165,16 +176,19 @@ def open_knight_penalty(board):
     # Return the pawn-scaled knight value
     return total_k_val*(1.0 - pawn_count/8.0)
 
+# Class that stores the two evluation functions
 class Evaluation:
 
     evaluation_fn = None
 
+    # Initialize the evaluation function based on input
     def __init__(self, evaluation_fn):
         if evaluation_fn == "naive":
             self.evaluate = self.naive
         elif evaluation_fn == "shannon":
             self.evaluate = self.shannon
 
+    # Simple naive evaluation function based on only material value
     def naive(self, board):
         board_value = 0
         for square in chess.SQUARES:
@@ -184,8 +198,8 @@ class Evaluation:
                 board_value += piece_value
         return board_value
 
+    # Evaluation function based on many different factors
     def shannon(self, board):
-
         board_value = 0
         # Add Positive Scores
         board_value += checkmate_score(board)
